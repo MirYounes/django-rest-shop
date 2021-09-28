@@ -1,0 +1,114 @@
+version: '3'
+
+services: 
+    redis :
+        container_name: redis
+        image: redis
+        networks: 
+            - main
+        restart: on-failure
+
+    rabbitmq:
+        container_name: rabbitmq
+        image: rabbitmq:latest
+        networks: 
+            - main
+        ports: 
+            - "5672:5672"
+        restart: on-failure
+
+    postgres :
+        container_name: postgres
+        image: postgres:latest
+        environment: 
+            - POSTGRES_DB=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+        networks: 
+            - main
+        ports: 
+            - "5432:5432"
+        restart: on-failure
+        volumes: 
+            - postgres_data:/var/lib/postgresql/data
+        
+    celery_worker :
+        build : .
+        container_name: celery_worker
+        command: "celery -A core worker -l INFO"
+        depends_on: 
+            - app
+            - rabbitmq
+            - postgres
+        environment: 
+            - C_FORCE_ROOT="true"
+        networks: 
+            - main
+        restart: on-failure
+
+    celery_beat :
+        build : .
+        container_name: celery_beat
+        command: "celery -A core beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+        depends_on: 
+            - app
+            - rabbitmq
+            - postgres
+            - celery_worker
+        environment: 
+            - C_FORCE_ROOT="true"
+        networks: 
+            - main
+        restart: on-failure
+    
+    app :
+        build: .
+        container_name: app
+        command: sh -c "
+          export DJANGO_SETTINGS_MODULE=core.settings.pro
+          && python manage.py collectstatic --noinput
+          && python manage.py makemigrations
+          && python manage.py migrate 
+          && gunicorn core.wsgi -b 0.0.0.0:8000
+          "
+        volumes: 
+            - .:/app/
+            - static_file:/app/static
+            - media_file:/app/media
+        depends_on:
+            - rabbitmq
+            - postgres
+            - redis
+        expose: 
+            - "8000"
+        networks: 
+            - main 
+        restart: on-failure
+    
+    nginx :
+        container_name: nginx
+        image: nginx:latest
+        command: nginx -g 'daemon off;'
+        depends_on: 
+            - app
+        networks: 
+            - main
+        ports: 
+            - "80:80"
+        volumes: 
+            - ./nginx.conf:/etc/nginx/nginx.conf
+            - static_file:/app/static
+            - media_file:/app/media
+
+
+networks:
+  main:
+
+
+    
+volumes:
+  postgres_data:
+
+  static_file:
+    
+  media_file:

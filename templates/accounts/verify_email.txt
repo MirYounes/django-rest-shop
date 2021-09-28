@@ -1,0 +1,4 @@
+hi {{ username }}
+we send to code for verfy your own email,
+please verfy email
+code : {{ code }}
