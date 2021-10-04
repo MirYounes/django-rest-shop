@@ -1,5 +1,16 @@
 # django-rest-shop
-A simple **Django** e-commerce application writen with Rest Full Api architecture 
+A full featured **Django** ecommerce application written with Restful Api architecture
+
+# Features
+- Production-ready configuration for Static Files, Database Settings, Gunicorn, Ngnix, Docker, etc.
+- A fully functional registration feature, with JSON Web Tokens authentication and email marketing capabilities
+- RESTful framework implemented using DRF
+- sending email to user and expiring coupons asynchronously using celery
+- use redis functional for caching and storing cart data and user tokens
+- Uses postgres for database
+
+
+
 
 # Technologies
 [![](https://img.shields.io/badge/python-3.x-blue)](https://www.python.org/)

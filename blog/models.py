@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from ckeditor.fields import RichTextField
-from .manager import CommentManager
 
 
 User = get_user_model()
@@ -19,6 +18,6 @@ class Article(models.Model):
     status = models.CharField(choices=STATUS , max_length=10)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    objects = CommentManager()
+    
 
 
